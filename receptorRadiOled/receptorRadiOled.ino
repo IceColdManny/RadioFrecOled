@@ -48,7 +48,7 @@ void loop() {
               Serial.println("\n--- Fin del mensaje detectado ('@') ---");
               Serial.println("Mensaje completo:");
               Serial.println(mensaje);
-              mostrarEnOLED(mensaje);
+              mostrarTextoDesplazandose(mensaje);
               reiniciarReceptor();
             } else {
               Serial.print("Caracter decodificado: ");
@@ -83,16 +83,22 @@ char decodificarASCII(String bits) {
 }
 
 bool esCaracterASCIIValido(String bits) {
-  return !(bits.startsWith("0000") || bits.startsWith("1111"));
+  return !(bits.startsWith("0000") || bits.startsWith("1111") || bits.startsWith("1000"));
 }
 
-void mostrarEnOLED(String mensaje) {
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  display.println(mensaje);
-  display.display();
+void mostrarTextoDesplazandose(String mensaje) {
+  int anchoMensaje = mensaje.length() * 3;
+  int inicioX = 128;
+  while (inicioX > -anchoMensaje) {
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(inicioX, 10);
+    display.println(mensaje);
+    display.display();
+    inicioX--;
+  }
+  delay(900);
 }
 
 void reiniciarReceptor() {
@@ -102,4 +108,3 @@ void reiniciarReceptor() {
   mitadSuperior = true;
   mensajeCompleto = false;
 }
-
