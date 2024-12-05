@@ -45,3 +45,4 @@ void enviarMitad(String bits) {
   delay(150);
   digitalWrite(tePin, HIGH);
 }
+
