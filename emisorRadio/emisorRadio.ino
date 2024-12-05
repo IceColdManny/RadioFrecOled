@@ -1,5 +1,6 @@
-const int dataPins[4] = {8, 9, 10, 11};
-const int tePin = 12;
+const int dataPins[4] = {8, 9, 10, 11};  
+const int tePin = 12;                    
+const int DESPLAZAMIENTO = 3;            
 
 void setup() {
   Serial.begin(9600);
@@ -14,8 +15,17 @@ void setup() {
 void loop() {
   if (Serial.available()) {
     String mensaje = Serial.readStringUntil('\n');
-    enviarMensaje(mensaje + "@");
+    enviarMensaje(cifrarMensaje(mensaje + "@"));  
   }
+}
+
+String cifrarMensaje(String mensaje) {
+  String mensajeCifrado = "";
+  for (int i = 0; i < mensaje.length(); i++) {
+    char caracterCifrado = mensaje[i] + DESPLAZAMIENTO;
+    mensajeCifrado += caracterCifrado;
+  }
+  return mensajeCifrado;
 }
 
 void enviarMensaje(String mensaje) {
@@ -45,4 +55,3 @@ void enviarMitad(String bits) {
   delay(150);
   digitalWrite(tePin, HIGH);
 }
-
