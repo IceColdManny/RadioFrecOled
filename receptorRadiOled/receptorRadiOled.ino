@@ -1,60 +1,49 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
-const int dataPins[4] = {8, 9, 10, 11};
-const int pinVT = 12;
-
 #define OLED_RESET 13
 Adafruit_SSD1306 display(OLED_RESET);
-
-const int DESPLAZAMIENTO = 3;
-
+#if (SSD1306_LCDHEIGHT != 32)
+#error("Altura incorrecta, cambie en la librería de Adafruit_SSD1306.h!")
+#endif
+const int dataPins[4] = {8, 9, 10, 11};
+const int pinVT = 12;
 String primeros4Bits = "";
 String segundos4Bits = "";
 String mensaje = "";
 bool mitadSuperior = true;
 bool mensajeCompleto = false;
-
 void setup() {
   Serial.begin(9600);
-
   for (int i = 0; i < 4; i++) {
     pinMode(dataPins[i], INPUT);
   }
   pinMode(pinVT, INPUT);
-
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   display.display();
-
   Serial.println("Esperando mensaje...");
 }
-
 void loop() {
   if (digitalRead(pinVT) == HIGH) {
     if (!mensajeCompleto) {
       String bitsLeidos = leerBits();
-
       if (mitadSuperior) {
         primeros4Bits = bitsLeidos;
         mitadSuperior = false;
       } else {
         segundos4Bits = bitsLeidos;
         String caracterBinario = primeros4Bits + segundos4Bits;
-
         if (caracterBinario.length() == 8) {
           if (esCaracterASCIIValido(caracterBinario)) {
             char caracter = decodificarASCII(caracterBinario);
             Serial.print("Bits recibidos: ");
             Serial.println(caracterBinario);
-
             if (caracter == '@') {
               mensajeCompleto = true;
               Serial.println("\n--- Fin del mensaje detectado ('@') ---");
               Serial.println("Mensaje completo:");
               Serial.println(mensaje);
               desplazarEnOLED(mensaje);
-
               reiniciarReceptor();
             } else {
               Serial.print("Caracter decodificado: ");
@@ -63,10 +52,8 @@ void loop() {
             }
           }
         }
-
         mitadSuperior = true;
       }
-
       delay(300);
     }
   } else {
@@ -76,7 +63,6 @@ void loop() {
     }
   }
 }
-
 String leerBits() {
   String bits = "";
   for (int i = 0; i < 4; i++) {
@@ -84,17 +70,13 @@ String leerBits() {
   }
   return bits;
 }
-
 char decodificarASCII(String bits) {
   int valor = strtol(bits.c_str(), nullptr, 2);
-  return (char)(valor - DESPLAZAMIENTO);
+  return (char)valor;
 }
-
 bool esCaracterASCIIValido(String bits) {
-  int valor = strtol(bits.c_str(), nullptr, 2) - DESPLAZAMIENTO;
-  return (valor >= 32 && valor <= 126);
+  return !(bits.startsWith("0000") || bits.startsWith("1111"));
 }
-
 void desplazarEnOLED(String mensaje) {
   int anchoTexto = mensaje.length() * 8;
   int x = 128;
@@ -117,7 +99,6 @@ void desplazarEnOLED(String mensaje) {
     }
   }
 }
-
 void reiniciarReceptor() {
   mensaje = "";
   primeros4Bits = "";
