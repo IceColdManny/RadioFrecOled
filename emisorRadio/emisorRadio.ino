@@ -1,4 +1,3 @@
-
 const int dataPins[4] = {8, 9, 10, 11};
 const int tePin = 12; 
 
